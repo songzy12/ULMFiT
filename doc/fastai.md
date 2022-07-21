@@ -1,12 +1,18 @@
 fastai/nbs/38_tutorial.text.ipynb
 
-- language_model_learner
-- text_classifier_learner
+```
+learn = language_model_learner(dls_lm, AWD_LSTM, metrics=[accuracy, Perplexity()], path=path, wd=0.1).to_fp16()
+learn.fit_one_cycle(1, 1e-2)
+learn.save_encoder('finetuned')
 
-fastai/fastai/text/models/core.py
+learn = text_classifier_learner(dls_clas, AWD_LSTM, drop_mult=0.5, metrics=accuracy)
+learn = learn.load_encoder('finetuned')
+learn.fit_one_cycle(2, slice(1e-3/(2.6**4),1e-3))
+```
 
-- get_language_model
-- get_text_classifier
+So the connection of the language model and the text classifier is a **common encoder**.
+
+fastai/nbs/33_text.models.core.ipynb
 
 ```
 def get_language_model(
