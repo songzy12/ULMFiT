@@ -47,3 +47,8 @@ def get_text_classifier(
     encoder = SentenceEncoder(seq_len, arch(vocab_sz, **config), pad_idx=pad_idx, max_len=max_len)
     model = SequentialRNN(encoder, PoolingLinearClassifier(layers, ps, bptt=seq_len, y_range=y_range))
 ```
+
+So the difference between the language model and the text classifier is 
+
+1. LinearDecoder
+2. PoolingLinearClassifier
