@@ -1,3 +1,7 @@
+## ULMFiT
+
+### Overview
+
 ULMFiT contains 3 steps:
 
 1. general domain LM pretraining
@@ -6,18 +10,22 @@ ULMFiT contains 3 steps:
 
 AWD-LSTM is the backbone used by ULMFiT, where AWD-LSTM stands for *ASGD Weight-Dropped LSTM*.
 
-Instead of AWD-LSTM, let us start with a vanilla LSTM.
-
-Datasets:
+### Datasets
 
 1. LM: Wikitext-103
 2. Topic classification: AG news
 
-To start with, we can also skip step 2, i.e., the target task LM fine-tuning:
+### Detail
 
-1. general domain LM pretraining
-3. target task classifier fine-tuning
+#### M1. General Domain LM Pretraining
 
-[1] Universal Language Model Fine-tuning for Text Classification.
+Instead of AWD-LSTM, let us start with a vanilla LSTM.
 
-[2] Regularizing and Optimizing LSTM Language Models.
+#### M2. Target Task LM Fine-tuning
+
+#### M3. Target Task Classifier Fine-tuning
+
+### Reference
+
+1. Universal Language Model Fine-tuning for Text Classification.
+2. Regularizing and Optimizing LSTM Language Models.
