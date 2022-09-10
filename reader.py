@@ -6,7 +6,7 @@ from paddlenlp.datasets import load_dataset
 from paddlenlp.data import Vocab
 
 
-def create_data_loader(batch_size, num_steps, data_path=None):
+def create_data_loader(batch_size, num_steps):
     train_ds, valid_ds, test_ds = load_dataset('ptb',
                                                splits=('train', 'valid',
                                                        'test'))

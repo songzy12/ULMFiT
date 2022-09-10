@@ -3,10 +3,6 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data_path",
-                        type=str,
-                        default=None,
-                        help="all the data for train,valid,test")
     parser.add_argument('--batch_size',
                         type=int,
                         default=20,

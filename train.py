@@ -11,11 +11,8 @@ paddle.seed(102)
 
 def train(args):
     paddle.set_device(args.device)
-    data_path = args.data_path
     train_loader, valid_loader, test_loader, vocab_size = create_data_loader(
-        batch_size=args.batch_size,
-        num_steps=args.num_steps,
-        data_path=data_path)
+        batch_size=args.batch_size, num_steps=args.num_steps)
 
     network = RnnLm(vocab_size=vocab_size,
                     hidden_size=args.hidden_size,
