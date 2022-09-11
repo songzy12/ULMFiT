@@ -65,25 +65,3 @@ class RnnLm(nn.Layer):
         self.cell = paddle.zeros(
             shape=[self.num_layers, self.batch_size, self.hidden_size],
             dtype='float32')
-
-
-class CrossEntropyLossForLm(nn.Layer):
-
-    def __init__(self):
-        super(CrossEntropyLossForLm, self).__init__()
-
-    def forward(self, y, label):
-        label = paddle.unsqueeze(label, axis=2)
-        loss = paddle.nn.functional.cross_entropy(input=y,
-                                                  label=label,
-                                                  reduction='none')
-        loss = paddle.squeeze(loss, axis=[2])
-        loss = paddle.mean(loss, axis=[0])
-        loss = paddle.sum(loss)
-        return loss
-
-
-class UpdateModel(paddle.callbacks.Callback):
-    # This callback reset model hidden states and update learning rate before each epoch begins
-    def on_epoch_begin(self, epoch=None, logs=None):
-        self.model.network.reset_states()

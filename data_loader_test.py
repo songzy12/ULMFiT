@@ -1,6 +1,6 @@
 import unittest
 
-from reader import create_data_loader
+from data_loader import create_data_loader
 
 
 class TestDataLoader(unittest.TestCase):

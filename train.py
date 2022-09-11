@@ -1,8 +1,10 @@
 import paddle
 
-from model import RnnLm, CrossEntropyLossForLm, UpdateModel
 from args import parse_args
-from reader import create_data_loader
+from data_loader import create_data_loader
+from model import RnnLm
+from callbacks import UpdateModel
+from losses import CrossEntropyLossForLm
 
 from paddlenlp.metrics import Perplexity
 
