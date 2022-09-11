@@ -4,7 +4,6 @@ import paddle.nn.initializer as I
 
 
 class RnnLm(nn.Layer):
-
     def __init__(self,
                  vocab_size,
                  hidden_size,
@@ -22,40 +21,41 @@ class RnnLm(nn.Layer):
         self.embedder = nn.Embedding(
             vocab_size,
             hidden_size,
-            weight_attr=paddle.ParamAttr(
-                initializer=I.Uniform(low=-init_scale, high=init_scale)))
+            weight_attr=paddle.ParamAttr(initializer=I.Uniform(
+                low=-init_scale, high=init_scale)))
 
         self.lstm = nn.LSTM(
             input_size=hidden_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
             dropout=dropout,
-            weight_ih_attr=paddle.ParamAttr(
-                initializer=I.Uniform(low=-init_scale, high=init_scale)),
-            weight_hh_attr=paddle.ParamAttr(
-                initializer=I.Uniform(low=-init_scale, high=init_scale)))
+            weight_ih_attr=paddle.ParamAttr(initializer=I.Uniform(
+                low=-init_scale, high=init_scale)),
+            weight_hh_attr=paddle.ParamAttr(initializer=I.Uniform(
+                low=-init_scale, high=init_scale)))
 
         self.fc = nn.Linear(
             hidden_size,
             vocab_size,
-            weight_attr=paddle.ParamAttr(
-                initializer=I.Uniform(low=-init_scale, high=init_scale)),
-            bias_attr=paddle.ParamAttr(
-                initializer=I.Uniform(low=-init_scale, high=init_scale)))
+            weight_attr=paddle.ParamAttr(initializer=I.Uniform(
+                low=-init_scale, high=init_scale)),
+            bias_attr=paddle.ParamAttr(initializer=I.Uniform(
+                low=-init_scale, high=init_scale)))
 
         self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, inputs):
-        x = inputs
-        x_emb = self.embedder(x)
-        x_emb = self.dropout(x_emb)
+        x = inputs  # [batch_size, nums_steps]
+        x_emb = self.embedder(x)  # [batch_size, nums_steps, hidden_size]
+        x_emb = self.dropout(x_emb)  # [batch_size, nums_steps, hidden_size]
 
-        y, (self.hidden, self.cell) = self.lstm(x_emb,
-                                                (self.hidden, self.cell))
+        y, (self.hidden, self.cell) = self.lstm(
+            x_emb, (self.hidden, self.cell)
+        )  # y.shape == [batch_size, num_steps, hidden_size]; hidden.shape == cell.shape == [num_layers, batch_size, hidden_size]
         (self.hidden, self.cell) = tuple(
             [item.detach() for item in (self.hidden, self.cell)])
-        y = self.dropout(y)
-        y = self.fc(y)
+        y = self.dropout(y)  # y.shape == [batch_size, num_steps, hidden_size]
+        y = self.fc(y)  # y.shape == [batch_size, num_steps, vocab_size]
         return y
 
     def reset_states(self):
