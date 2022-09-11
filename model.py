@@ -45,9 +45,9 @@ class RnnLm(nn.Layer):
         self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, inputs):
-        x = inputs  # [batch_size, nums_steps]
-        x_emb = self.embedder(x)  # [batch_size, nums_steps, hidden_size]
-        x_emb = self.dropout(x_emb)  # [batch_size, nums_steps, hidden_size]
+        x = inputs  # [batch_size, num_steps]
+        x_emb = self.embedder(x)  # [batch_size, num_steps, hidden_size]
+        x_emb = self.dropout(x_emb)  # [batch_size, num_steps, hidden_size]
 
         y, (self.hidden, self.cell) = self.lstm(
             x_emb, (self.hidden, self.cell)
