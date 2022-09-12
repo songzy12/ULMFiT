@@ -14,29 +14,47 @@ So, what is the different between
 
 ### Language Model
 
-`PaddleNLP/examples/language_model/rnnlm/model.py`
+#### Model
 
 ```
 class RnnLm(nn.Layer):
-    def __init__(self,
-                 vocab_size,
-                 hidden_size,
-                 batch_size,
-                 num_layers=1,
-                 init_scale=0.1,
-                 dropout=0.0):
-        self.lstm = nn.LSTM(
-            input_size=hidden_size,
-            hidden_size=hidden_size,
-            num_layers=num_layers,
-            dropout=dropout,
-            weight_ih_attr=paddle.ParamAttr(
-                initializer=I.Uniform(low=-init_scale, high=init_scale)),
-            weight_hh_attr=paddle.ParamAttr(
-                initializer=I.Uniform(low=-init_scale, high=init_scale)))
 
     def forward(self, inputs):
-        y, (self.hidden, self.cell) = self.lstm(x_emb, (self.hidden, self.cell))
+        x = inputs  # [batch_size, num_steps]
+        x_emb = self.embedder(x)  # [batch_size, num_steps, hidden_size]
+        x_emb = self.dropout(x_emb)  # [batch_size, num_steps, hidden_size]
+
+        y, (self.hidden, self.cell) = self.lstm(
+            x_emb, (self.hidden, self.cell)
+        )  # y.shape == [batch_size, num_steps, hidden_size]; hidden.shape == cell.shape == [num_layers, batch_size, hidden_size]
+        (self.hidden, self.cell) = tuple(
+            [item.detach() for item in (self.hidden, self.cell)])
+        y = self.dropout(y)  # y.shape == [batch_size, num_steps, hidden_size]
+        y = self.fc(y)  # y.shape == [batch_size, num_steps, vocab_size]
+        return y
+```
+
+#### Losses
+
+Perplexity is the exponential of the cross-entropy: 
+<https://towardsdatascience.com/the-relationship-between-perplexity-and-entropy-in-nlp-f81888775ccc>.
+
+```
+class CrossEntropyLossForLm(nn.Layer):
+
+    def forward(self, y, label):
+        # y.shape == [batch_size, num_steps, vocab_size]
+        # label.shape == [batch_size, num_steps]
+        label = paddle.unsqueeze(
+            label, axis=2)  # label.shape == [batch_size, num_steps, 1]
+        loss = paddle.nn.functional.cross_entropy(
+            input=y, label=label,
+            reduction='none')  # loss.shape == [batch_size, num_steps, 1]
+        loss = paddle.squeeze(
+            loss, axis=[2])  # loss.shape == [batch_size, num_steps]
+        loss = paddle.mean(loss, axis=[0])  # loss.shape == [num_steps]
+        loss = paddle.sum(loss)  # loss.shape == [1]
+        return loss
 ```
 
 ### Text Classification
