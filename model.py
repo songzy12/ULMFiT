@@ -3,44 +3,32 @@ import paddle.nn as nn
 import paddle.nn.initializer as I
 
 
-class RnnLm(nn.Layer):
-    def __init__(self,
-                 vocab_size,
-                 hidden_size,
-                 batch_size,
-                 num_layers=1,
-                 init_scale=0.1,
-                 dropout=0.0):
-        super(RnnLm, self).__init__()
+class AWD_LSTM(nn.Layer):
+    # fastai/fastai/text/models/awdlstm.py
+    def __init__(self, vocab_size, hidden_size, batch_size, num_layers,
+                 init_scale, dropout):
+        super(AWD_LSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.init_scale = init_scale
         self.batch_size = batch_size
-        self.reset_states()
+        self.reset()
 
         self.embedder = nn.Embedding(
             vocab_size,
             hidden_size,
-            weight_attr=paddle.ParamAttr(initializer=I.Uniform(
-                low=-init_scale, high=init_scale)))
+            weight_attr=paddle.ParamAttr(
+                initializer=I.Uniform(low=-init_scale, high=init_scale)))
 
         self.lstm = nn.LSTM(
             input_size=hidden_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
             dropout=dropout,
-            weight_ih_attr=paddle.ParamAttr(initializer=I.Uniform(
-                low=-init_scale, high=init_scale)),
-            weight_hh_attr=paddle.ParamAttr(initializer=I.Uniform(
-                low=-init_scale, high=init_scale)))
-
-        self.fc = nn.Linear(
-            hidden_size,
-            vocab_size,
-            weight_attr=paddle.ParamAttr(initializer=I.Uniform(
-                low=-init_scale, high=init_scale)),
-            bias_attr=paddle.ParamAttr(initializer=I.Uniform(
-                low=-init_scale, high=init_scale)))
+            weight_ih_attr=paddle.ParamAttr(
+                initializer=I.Uniform(low=-init_scale, high=init_scale)),
+            weight_hh_attr=paddle.ParamAttr(
+                initializer=I.Uniform(low=-init_scale, high=init_scale)))
 
         self.dropout = nn.Dropout(p=dropout)
 
@@ -55,13 +43,37 @@ class RnnLm(nn.Layer):
         (self.hidden, self.cell) = tuple(
             [item.detach() for item in (self.hidden, self.cell)])
         y = self.dropout(y)  # y.shape == [batch_size, num_steps, hidden_size]
-        y = self.fc(y)  # y.shape == [batch_size, num_steps, vocab_size]
         return y
 
-    def reset_states(self):
+    def reset(self):
+        # TODO(songzy): reset should not depend on batch_size.
         self.hidden = paddle.zeros(
             shape=[self.num_layers, self.batch_size, self.hidden_size],
             dtype='float32')
         self.cell = paddle.zeros(
             shape=[self.num_layers, self.batch_size, self.hidden_size],
             dtype='float32')
+
+
+class SequentialRNN(nn.Sequential):
+    "A sequential module that passes the reset call to its children."
+
+    def reset(self):
+        for c in self.children():
+            if hasattr(c, 'reset'):
+                getattr(c, 'reset')()
+
+
+def get_language_model(vocab_size, hidden_size, batch_size, num_layers,
+                       init_scale, dropout):
+    # fastai/fastai/text/models/core.py
+    encoder = AWD_LSTM(vocab_size, hidden_size, batch_size, num_layers,
+                       init_scale, dropout)
+    decoder = nn.Linear(
+        hidden_size,
+        vocab_size,
+        weight_attr=paddle.ParamAttr(
+            initializer=I.Uniform(low=-init_scale, high=init_scale)),
+        bias_attr=paddle.ParamAttr(
+            initializer=I.Uniform(low=-init_scale, high=init_scale)))
+    return SequentialRNN(("encoder", encoder), ("decoder", decoder))

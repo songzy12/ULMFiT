@@ -1,1 +1,3 @@
-python train.py --device=cpu
+python train.py \
+  --device=cpu \
+  --max_epoch=1

@@ -2,7 +2,7 @@ import paddle
 
 from args import parse_args
 from data_loader import create_data_loader
-from model import RnnLm
+from model import get_language_model
 from callbacks import UpdateModel
 from losses import CrossEntropyLossForLm
 
@@ -16,12 +16,12 @@ def train(args):
     train_loader, valid_loader, test_loader, vocab_size = create_data_loader(
         batch_size=args.batch_size, num_steps=args.num_steps)
 
-    network = RnnLm(vocab_size=vocab_size,
-                    hidden_size=args.hidden_size,
-                    batch_size=args.batch_size,
-                    num_layers=args.num_layers,
-                    init_scale=args.init_scale,
-                    dropout=args.dropout)
+    network = get_language_model(vocab_size=vocab_size,
+                                 hidden_size=args.hidden_size,
+                                 batch_size=args.batch_size,
+                                 num_layers=args.num_layers,
+                                 init_scale=args.init_scale,
+                                 dropout=args.dropout)
     gloabl_norm_clip = paddle.nn.ClipGradByGlobalNorm(args.max_grad_norm)
     cross_entropy = CrossEntropyLossForLm()
     ppl_metric = Perplexity()
