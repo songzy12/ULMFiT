@@ -3,10 +3,10 @@ import unittest
 import numpy as np
 import paddle
 
-from model import RnnLm
+from model import get_language_model
 
 
-class TestRnnLm(unittest.TestCase):
+class TestLanguageModel(unittest.TestCase):
     def test_rnn_lm(self):
         VOCAB_SIZE = 10000
         HIDDEN_SIZE = 650
@@ -15,7 +15,7 @@ class TestRnnLm(unittest.TestCase):
         INIT_SCALE = 0.05
         DROPOUT = 0.5
 
-        network = RnnLm(
+        network = get_language_model(
             vocab_size=VOCAB_SIZE,
             hidden_size=HIDDEN_SIZE,
             batch_size=BATCH_SIZE,
