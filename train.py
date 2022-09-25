@@ -16,12 +16,12 @@ def train(args):
     train_loader, valid_loader, test_loader, vocab_size = create_data_loader(
         batch_size=args.batch_size, num_steps=args.num_steps)
 
-    network = get_language_model(vocab_size=vocab_size,
-                                 hidden_size=args.hidden_size,
-                                 batch_size=args.batch_size,
-                                 num_layers=args.num_layers,
-                                 init_scale=args.init_scale,
-                                 dropout=args.dropout)
+    network = get_language_model(
+        vocab_size=vocab_size,
+        hidden_size=args.hidden_size,
+        batch_size=args.batch_size,
+        num_layers=args.num_layers,
+        dropout=args.dropout)
     gloabl_norm_clip = paddle.nn.ClipGradByGlobalNorm(args.max_grad_norm)
     cross_entropy = CrossEntropyLossForLm()
     ppl_metric = Perplexity()
@@ -31,8 +31,7 @@ def train(args):
 
     learning_rate = paddle.optimizer.lr.LambdaDecay(
         learning_rate=args.base_lr,
-        lr_lambda=lambda x: args.lr_decay**max(x + 1 - args.epoch_start_decay,
-                                               0.0),
+        lr_lambda=lambda x: args.lr_decay**max(x + 1 - args.epoch_start_decay, 0.0),
         verbose=True)
     optimizer = paddle.optimizer.SGD(learning_rate=learning_rate,
                                      parameters=model.parameters(),

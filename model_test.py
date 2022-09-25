@@ -12,7 +12,6 @@ class TestLanguageModel(unittest.TestCase):
         HIDDEN_SIZE = 650
         BATCH_SIZE = 20
         NUM_LAYERS = 2
-        INIT_SCALE = 0.05
         DROPOUT = 0.5
 
         network = get_language_model(
@@ -20,7 +19,6 @@ class TestLanguageModel(unittest.TestCase):
             hidden_size=HIDDEN_SIZE,
             batch_size=BATCH_SIZE,
             num_layers=NUM_LAYERS,
-            init_scale=INIT_SCALE,
             dropout=DROPOUT)
         print(network)
 
