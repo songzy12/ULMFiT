@@ -1,14 +1,14 @@
 import unittest
 
-from data_loader import create_data_loader
+from data_loader import create_data_loader_for_lm
 
 
 class TestDataLoader(unittest.TestCase):
 
-    def test_create_data_loader(self):
+    def test_create_data_loader_for_lm(self):
         BATCH_SIZE = 20
         NUM_STEPS = 35
-        train_loader, valid_loader, test_loader, vocab_size = create_data_loader(
+        train_loader, valid_loader, test_loader, vocab_size = create_data_loader_for_lm(
             batch_size=BATCH_SIZE, num_steps=NUM_STEPS)
 
         assert (vocab_size == 10000)
