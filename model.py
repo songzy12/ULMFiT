@@ -6,16 +6,14 @@ import paddle.nn.initializer as I
 class AWD_LSTM(nn.Layer):
     # fastai/fastai/text/models/awdlstm.py
     def __init__(self, vocab_size, hidden_size, batch_size, num_layers,
-                  dropout):
+                 dropout):
         super(AWD_LSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.batch_size = batch_size
         self.reset()
 
-        self.embedder = nn.Embedding(
-            vocab_size,
-            hidden_size)
+        self.embedder = nn.Embedding(vocab_size, hidden_size)
 
         self.lstm = nn.LSTM(
             input_size=hidden_size,
@@ -64,3 +62,16 @@ def get_language_model(vocab_size, hidden_size, batch_size, num_layers,
                        dropout)
     decoder = nn.Linear(hidden_size, vocab_size)
     return SequentialRNN(("encoder", encoder), ("decoder", decoder))
+
+
+def get_text_classifier(vocab_size, n_class, hidden_size, batch_size,
+                        num_layers, dropout):
+    # fastai/text/models/core.py
+    encoder = AWD_LSTM(vocab_size, hidden_size, batch_size, num_layers,
+                       dropout)
+    # TODO(songzy): change this Linear to PoolingLinearClassifier.
+    decoder = nn.Linear(hidden_size, n_class)
+    return SequentialRNN(("encoder", encoder), ("decoder", decoder))
+
+
+# TODO(songzy): add save_encoder and load_encoder.
