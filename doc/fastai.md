@@ -1,6 +1,11 @@
 fastai/nbs/38_tutorial.text.ipynb
 
 ```
+dls_lm = TextDataLoaders.from_folder(path, is_lm=True, valid_pct=0.1)
+dls_clas = TextDataLoaders.from_folder(untar_data(URLs.IMDB), valid='test', text_vocab=dls_lm.vocab)
+```
+
+```
 learn = language_model_learner(dls_lm, AWD_LSTM, metrics=[accuracy, Perplexity()], path=path, wd=0.1).to_fp16()
 learn.fit_one_cycle(1, 1e-2)
 learn.save_encoder('finetuned')
