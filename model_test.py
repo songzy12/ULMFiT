@@ -30,7 +30,7 @@ class TestLanguageModel(unittest.TestCase):
         assert (y.shape == [BATCH_SIZE, NUM_STEPS, VOCAB_SIZE])
 
 
-class TestLanguageModel(unittest.TestCase):
+class TestTextClassifier(unittest.TestCase):
     def test_text_classifier(self):
         VOCAB_SIZE = 10000
         HIDDEN_SIZE = 650
@@ -53,7 +53,7 @@ class TestLanguageModel(unittest.TestCase):
             BATCH_SIZE, NUM_STEPS)).astype('int64')  # [BATCH_SIZE, NUM_STEPS]
         x = paddle.to_tensor(x_data)
         y = network.forward(x)
-        assert (y.shape == [BATCH_SIZE, NUM_STEPS, N_CLASS])
+        assert (y.shape == [BATCH_SIZE, N_CLASS])
 
 
 if __name__ == '__main__':

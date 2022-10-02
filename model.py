@@ -15,11 +15,10 @@ class AWD_LSTM(nn.Layer):
 
         self.embedder = nn.Embedding(vocab_size, hidden_size)
 
-        self.lstm = nn.LSTM(
-            input_size=hidden_size,
-            hidden_size=hidden_size,
-            num_layers=num_layers,
-            dropout=dropout)
+        self.lstm = nn.LSTM(input_size=hidden_size,
+                            hidden_size=hidden_size,
+                            num_layers=num_layers,
+                            dropout=dropout)
 
         self.dropout = nn.Dropout(p=dropout)
 
@@ -46,6 +45,20 @@ class AWD_LSTM(nn.Layer):
             dtype='float32')
 
 
+class PoolingLinearClassifier(nn.Layer):
+
+    def __init__(self, in_features, out_features):
+        super(PoolingLinearClassifier, self).__init__()
+
+        # TODO(songzy): add more layers.
+        self.linear = nn.Linear(in_features, out_features)
+
+    def forward(self, x):
+        x = paddle.mean(x, axis=1)
+        y = self.linear(x)
+        return y
+
+
 class SequentialRNN(nn.Sequential):
     "A sequential module that passes the reset call to its children."
 
@@ -69,8 +82,7 @@ def get_text_classifier(vocab_size, n_class, hidden_size, batch_size,
     # fastai/text/models/core.py
     encoder = AWD_LSTM(vocab_size, hidden_size, batch_size, num_layers,
                        dropout)
-    # TODO(songzy): change this Linear to PoolingLinearClassifier.
-    decoder = nn.Linear(hidden_size, n_class)
+    decoder = PoolingLinearClassifier(hidden_size, n_class)
     return SequentialRNN(("encoder", encoder), ("decoder", decoder))
 
 
