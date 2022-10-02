@@ -86,4 +86,5 @@ def get_text_classifier(vocab_size, n_class, hidden_size, batch_size,
     return SequentialRNN(("encoder", encoder), ("decoder", decoder))
 
 
-# TODO(songzy): add save_encoder and load_encoder.
+# TODO(songzy): add save_encoder and load_encoder as in
+#   fastai/fastai/text/learner.py
