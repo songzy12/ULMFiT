@@ -42,8 +42,7 @@ def pretrain_lm(args):
         print("Loaded checkpoint from %s" % args.init_from_ckpt)
 
     scheduler = paddle.callbacks.LRScheduler(by_step=False, by_epoch=True)
-    benchmark_logger = paddle.callbacks.ProgBarLogger(
-        log_freq=(len(train_loader) // 10), verbose=3)
+    benchmark_logger = paddle.callbacks.ProgBarLogger(log_freq=100, verbose=3)
     callbacks = [ResetModel(), scheduler, benchmark_logger]
 
     model.fit(train_data=train_loader,
@@ -90,8 +89,7 @@ def train_text_classifier(args):
         print("Loaded checkpoint from %s" % args.init_from_ckpt)
 
     scheduler = paddle.callbacks.LRScheduler(by_step=False, by_epoch=True)
-    benchmark_logger = paddle.callbacks.ProgBarLogger(
-        log_freq=(len(train_loader) // 10), verbose=3)
+    benchmark_logger = paddle.callbacks.ProgBarLogger(log_freq=100, verbose=3)
     callbacks = [ResetModel(), scheduler, benchmark_logger]
 
     model.fit(train_data=train_loader,
@@ -102,8 +100,9 @@ def train_text_classifier(args):
 
     model.save(path='checkpoint/test')  # save for training
 
-    print('Start to evaluate on test dataset...')
-    model.evaluate(test_loader, log_freq=len(test_loader))
+    # NOTE: the test_loader does not have 'labels' info.
+    print('Start to evaluate on valid dataset...')
+    model.evaluate(valid_loader, log_freq=len(valid_loader))
 
 
 if __name__ == '__main__':

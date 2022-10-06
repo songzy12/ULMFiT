@@ -6,6 +6,9 @@ import paddle
 from paddlenlp.datasets import load_dataset
 from paddlenlp.data import Vocab, Pad, Stack, Tuple
 
+EOS_TOKEN = '<eos>'
+UNK_TOKEN = '<unk>'
+
 
 def convert_ptb_example(examples, vocab, batch_size, num_steps):
     # Because the sentences in PTB dataset might be consecutive, we need to concatenate
@@ -23,7 +26,7 @@ def convert_ptb_example(examples, vocab, batch_size, num_steps):
     #                  ["no", "asbestos", "in", "our"]]
     concat_examples = []
     for example in examples:
-        concat_examples += example['sentence'].split() + ['</eos>']
+        concat_examples += example['sentence'].split() + [EOS_TOKEN]
 
     concat_examples = vocab.to_indices(concat_examples)
 
@@ -42,13 +45,14 @@ def convert_ptb_example(examples, vocab, batch_size, num_steps):
 
 
 def create_data_loader_for_lm(batch_size, num_steps):
+    # train, valid, test all have a single field of 'sentence'.
     train_ds, valid_ds, test_ds = load_dataset(
         'ptb', splits=('train', 'valid', 'test'))
 
     train_examples = [
         train_ds[i]['sentence'].split() for i in range(len(train_ds))
     ]
-    vocab = Vocab.build_vocab(train_examples, eos_token='</eos>')
+    vocab = Vocab.build_vocab(train_examples, eos_token=EOS_TOKEN)
 
     trans_fn = partial(
         convert_ptb_example,
@@ -76,13 +80,16 @@ def convert_sst2_example(example, vocab, num_steps):
 
 
 def create_data_loader_for_text_classifier(batch_size, num_steps):
+    # train, dev both have the fields 'sentence' and 'labels'.
+    # NOTE: the test_ds does not have 'labels' field.
     train_ds, valid_ds, test_ds = load_dataset(
         'glue', 'sst-2', splits=('train', 'dev', 'test'))
 
     train_examples = [
         train_ds[i]['sentence'].split() for i in range(len(train_ds))
     ]
-    vocab = Vocab.build_vocab(train_examples, eos_token='</eos>')
+    vocab = Vocab.build_vocab(
+        train_examples, eos_token=EOS_TOKEN, unk_token=UNK_TOKEN)
 
     trans_func = partial(
         convert_sst2_example, vocab=vocab, num_steps=num_steps)
@@ -95,16 +102,17 @@ def create_data_loader_for_text_classifier(batch_size, num_steps):
         Stack(dtype="int64" if train_ds.label_list else "float32")  # label
     ): fn(samples)
 
+    # TODO(songzy): check whether it is possible to not drop_last for rnn.
     train_sampler = paddle.io.BatchSampler(
-        dataset=train_ds, batch_size=batch_size)
+        dataset=train_ds, batch_size=batch_size, drop_last=True)
     train_data_loader = paddle.io.DataLoader(
         train_ds, batch_sampler=train_sampler, collate_fn=batchify_fn)
     valid_sampler = paddle.io.BatchSampler(
-        dataset=valid_ds, batch_size=batch_size)
+        dataset=valid_ds, batch_size=batch_size, drop_last=True)
     valid_data_loader = paddle.io.DataLoader(
         valid_ds, batch_sampler=valid_sampler, collate_fn=batchify_fn)
     test_sampler = paddle.io.BatchSampler(
-        dataset=test_ds, batch_size=batch_size)
+        dataset=test_ds, batch_size=batch_size, drop_last=True)
     test_data_loader = paddle.io.DataLoader(
         test_ds, batch_sampler=test_sampler, collate_fn=batchify_fn)
 
