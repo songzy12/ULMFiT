@@ -86,5 +86,29 @@ def get_text_classifier(vocab_size, n_class, hidden_size, batch_size,
     return SequentialRNN(("encoder", encoder), ("decoder", decoder))
 
 
-# TODO(songzy): add save_encoder and load_encoder as in
-#   fastai/fastai/text/learner.py
+def save_encoder(model, filename):
+    assert 'encoder' in dir(model)
+    encoder = model['encoder']
+
+    paddle.save(encoder.state_dict(), filename)
+
+
+def load_encoder(model, filename):
+    assert 'encoder' in dir(model)
+    encoder = model['encoder']
+
+    model_dict = encoder.state_dict()
+    model_state_dict = paddle.load(filename)
+    # The following section is for debugging purpose only.
+    for name, weight in model_dict.items():
+        if name in model_state_dict.keys():
+            if weight.shape != list(model_state_dict[name].shape):
+                print(
+                    '{} not used, shape {} unmatched with {} in model.'.format(
+                        name, list(model_state_dict[name].shape),
+                        weight.shape))
+                model_state_dict.pop(name, None)
+        else:
+            print('Lack weight: {}'.format(name))
+
+    encoder.set_dict(model_state_dict)

@@ -15,27 +15,26 @@ def pretrain_lm(args):
     train_loader, valid_loader, test_loader, vocab_size = create_data_loader_for_lm(
         batch_size=args.batch_size, num_steps=args.num_steps)
 
-    network = get_language_model(
-        vocab_size=vocab_size,
-        hidden_size=args.hidden_size,
-        batch_size=args.batch_size,
-        num_layers=args.num_layers,
-        dropout=args.dropout)
+    network = get_language_model(vocab_size=vocab_size,
+                                 hidden_size=args.hidden_size,
+                                 batch_size=args.batch_size,
+                                 num_layers=args.num_layers,
+                                 dropout=args.dropout)
     model = paddle.Model(network)
 
     learning_rate = paddle.optimizer.lr.LambdaDecay(
         learning_rate=args.base_lr,
-        lr_lambda=lambda x: args.lr_decay**max(x + 1 - args.epoch_start_decay, 0.0),
+        lr_lambda=lambda x: args.lr_decay**max(x + 1 - args.epoch_start_decay,
+                                               0.0),
         verbose=True)
     gloabl_norm_clip = paddle.nn.ClipGradByGlobalNorm(args.max_grad_norm)
     optimizer = paddle.optimizer.SGD(learning_rate=learning_rate,
                                      parameters=model.parameters(),
                                      grad_clip=gloabl_norm_clip)
 
-    model.prepare(
-        optimizer=optimizer,
-        loss=CrossEntropyLossForLm(),
-        metrics=Perplexity())
+    model.prepare(optimizer=optimizer,
+                  loss=CrossEntropyLossForLm(),
+                  metrics=Perplexity())
 
     if args.init_from_ckpt:
         model.load(args.init_from_ckpt)
@@ -61,28 +60,27 @@ def train_text_classifier(args):
     train_loader, valid_loader, test_loader, vocab_size = create_data_loader_for_text_classifier(
         batch_size=args.batch_size, num_steps=args.num_steps)
 
-    network = get_text_classifier(
-        vocab_size=vocab_size,
-        n_class=2,
-        hidden_size=args.hidden_size,
-        batch_size=args.batch_size,
-        num_layers=args.num_layers,
-        dropout=args.dropout)
+    network = get_text_classifier(vocab_size=vocab_size,
+                                  n_class=2,
+                                  hidden_size=args.hidden_size,
+                                  batch_size=args.batch_size,
+                                  num_layers=args.num_layers,
+                                  dropout=args.dropout)
     model = paddle.Model(network)
 
     learning_rate = paddle.optimizer.lr.LambdaDecay(
         learning_rate=args.base_lr,
-        lr_lambda=lambda x: args.lr_decay**max(x + 1 - args.epoch_start_decay, 0.0),
+        lr_lambda=lambda x: args.lr_decay**max(x + 1 - args.epoch_start_decay,
+                                               0.0),
         verbose=True)
     gloabl_norm_clip = paddle.nn.ClipGradByGlobalNorm(args.max_grad_norm)
     optimizer = paddle.optimizer.SGD(learning_rate=learning_rate,
                                      parameters=model.parameters(),
                                      grad_clip=gloabl_norm_clip)
 
-    model.prepare(
-        optimizer=optimizer,
-        loss=paddle.nn.CrossEntropyLoss(),
-        metrics=paddle.metric.Accuracy())
+    model.prepare(optimizer=optimizer,
+                  loss=paddle.nn.CrossEntropyLoss(),
+                  metrics=paddle.metric.Accuracy())
 
     if args.init_from_ckpt:
         model.load(args.init_from_ckpt)
@@ -108,5 +106,6 @@ def train_text_classifier(args):
 if __name__ == '__main__':
     args = parse_args()
     paddle.set_device(args.device)
-    # pretrain_lm(args)
+    pretrain_lm(args)
+    # TODO(songzy): save encoder after pretrain lm, and load encoder before train text classifier.
     train_text_classifier(args)
