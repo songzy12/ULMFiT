@@ -106,6 +106,6 @@ def train_text_classifier(args):
 if __name__ == '__main__':
     args = parse_args()
     paddle.set_device(args.device)
-    pretrain_lm(args)
     # TODO(songzy): save encoder after pretrain lm, and load encoder before train text classifier.
+    pretrain_lm(args)
     train_text_classifier(args)
